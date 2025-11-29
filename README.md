@@ -34,10 +34,29 @@ Ensure you have Python 3.10+ installed on your system.
 
 Install Dependencies
 
-Open your terminal or command prompt, navigate to the project directory, and run:
+To ensure the project runs without conflicting with other software on your system, you must use a virtual environment.
 
+1. Create Environment:
+Open your terminal or command prompt, navigate to the project directory, and create the environment (we recommend naming it 'venv'):
+python -m venv venv
+
+2. Activate Environment:
+You MUST activate the environment every time you open a new terminal session before running the script.
+
+    - Windows (Command Prompt):
+      venv\Scripts\activate.bat
+
+    - Windows (PowerShell):
+      venv\Scripts\Activate.ps1
+
+    - macOS / Linux:
+      source venv/bin/activate
+
+3. Install Requirements:
+With the environment activated, install all necessary libraries:
 pip install -r requirements.txt
 
+(You should see '(venv)' or similar text at the start of your terminal prompt when the environment is active.)
 
 
 Secure Google API Setup (Critical Step)
