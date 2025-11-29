@@ -1,0 +1,16 @@
+# Python environment files
+__pycache__/
+*.pyc
+
+# Virtual environment directory
+venv/
+.venv/
+
+# Credentials and sensitive files (CRITICAL: DO NOT COMMIT THESE)
+client_secret.json
+token.pickle
+.env
+
+# Log files
+logs/
+credentials.json
