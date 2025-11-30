@@ -9,6 +9,7 @@ The end-to-end runnable script that executes the entire workflow:
 5. Mark processed emails as read.
 """
 import datetime
+from datetime import UTC
 from typing import Dict, List, Any
 
 from utils.logger import setup_logger
@@ -66,7 +67,7 @@ def build_row(parsed: Dict[str, Any], header: List[str]) -> List[Any]:
             row.append(str(value)[:10000])
         elif field_name == "Date":
             # Use fallback date if the parsed dictionary is missing the date
-            row.append(value or datetime.datetime.utcnow().isoformat())
+            row.append(value or datetime.datetime.now(UTC).isoformat())
         else:
             row.append(value)
 
@@ -113,7 +114,7 @@ def run_pipeline() -> None:
         try:
             parsed = parse_email(m)
             rows.append(build_row(parsed, header=FINAL_HEADER))
-            processed_ids.append(parsed.get("id"))
+            processed_ids.append(parsed.get("Message ID"))
         except Exception as e:
             logger.error("Failed to parse message id=%s: %s", message_id, e)
 

@@ -1,5 +1,8 @@
 import re
 from typing import Dict, List, Any
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def extract_key_value(text: str, config: Dict[str, Any]) -> str:
@@ -21,7 +24,17 @@ def extract_key_value(text: str, config: Dict[str, Any]) -> str:
     key_patterns: List[str] = config.get("key_patterns", [])
 
     # Escape special regex characters in the delimiter (e.g., if delimiter is '$' or '.')
-    delimiter: str = re.escape(config.get("delimiter", ":"))
+    raw_delimiter: str = config.get("delimiter", ":")
+
+    # If the delimiter is a simple character (like ":"), escape it.
+    # If it looks like a complex regex (like r"\s*[:\-#]\s*"), use it as-is.
+    # We use a simple check: if it starts with \s, we assume it's regex.
+    if raw_delimiter.startswith(r"\s*") or re.search(r'[|\[\](){}.*+?]', raw_delimiter):
+        # Assume it's a pre-built regex pattern (like r"\s*[:\-#]\s*"). Do NOT escape it.
+        delimiter_regex = raw_delimiter
+    else:
+        # It's a simple character (like ":"). Escape it for safety.
+        delimiter_regex = re.escape(raw_delimiter)
 
     if not text or not key_patterns:
         return ""
@@ -32,15 +45,11 @@ def extract_key_value(text: str, config: Dict[str, Any]) -> str:
     if not escaped_patterns:
         return ""
 
-    # 2. Construct the full pattern:
-    # (?:{'|'.join(...)}) : Non-capturing group for all possible escaped key patterns
-    # \s* : Zero or more whitespace characters
-    # {delimiter}           : The escaped delimiter (e.g., ':')
-    # \s* : Zero or more whitespace characters
-    # ((\s*[^,\n\r]+?))    : Capture Group 1 (the value):
-    #   - \s* : Optional leading whitespace in the value
-    #   - [^,\n\r]+?        : Non-greedy match of one or more characters until a comma, newline, or carriage return
-    full_pattern = rf"(?:{'|'.join(escaped_patterns)})\s*{delimiter}\s*((\s*[^,\n\r]+?))"
+    #2. Construct the finale pattern:
+    # Use a non-capturing group (?:...) for the keys, followed by the delimiter.
+    # The value (.*?) is captured non-greedily until the positive lookahead is met.
+    # The lookahead (?=\n|$) forces the match to stop right before a newline OR the end of the string.
+    full_pattern = rf"(?:{'|'.join(escaped_patterns)})\s*{delimiter_regex}\s*(.*?)(?=\n|$)"
 
     # re.IGNORECASE makes the key match case-insensitive
     match = re.search(full_pattern, text, re.IGNORECASE)

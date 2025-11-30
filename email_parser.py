@@ -157,13 +157,13 @@ def parse_email(full_message: Dict) -> Dict[str, Any]:
     body = extract_text_body(payload)
 
     parsed: Dict[str, Any] = {
-        "id": full_message.get("id"),
-        "threadId": full_message.get("threadId"),
-        "subject": subject,
-        "from_raw": from_raw,
-        "date": date,
-        "body": body,
-        "priority": "Normal",  # Default priority
+        "Message ID": full_message.get("id"),
+        "Thread ID": full_message.get("threadId"),
+        "Subject": subject,
+        "From": from_raw,
+        "Date": date,
+        "Body (plain)": body,
+        "Priority": "Normal",  # Default priority
     }
 
     # --- Apply Custom Parsing Rules (PARSING_MAP) ---
@@ -199,9 +199,9 @@ def parse_email(full_message: Dict) -> Dict[str, Any]:
         # Use word boundaries (\b) for precise keyword matching
         pattern = rf"\b{re.escape(kw.lower())}\b"
         if re.search(pattern, combined_content):
-            parsed["priority"] = "High"
+            parsed["Priority"] = "High"
             break
 
     logger.info("Parsed message id=%s, subject='%s', priority=%s",
-                parsed["id"], subject[:40] + "..." if len(subject) > 40 else subject, parsed["priority"])
+                parsed["Message ID"], subject[:40] + "..." if len(subject) > 40 else subject, parsed["Priority"])
     return parsed

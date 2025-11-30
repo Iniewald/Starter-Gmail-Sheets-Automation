@@ -46,22 +46,39 @@ LOG_LEVEL: Final[str] = os.getenv("LOG_LEVEL", "INFO")
 # - method: The parsing technique ('key_value', 'regex_pattern', or 'header').
 # - Additional fields are specific to the method (e.g., 'key_patterns', 'pattern', 'header_name').
 PARSING_MAP: Final[List[Dict[str, Any]]] = [
+    # --- 1. Key-Value Fields (Relies on stable 'extract_key_value') ---
+    # These fields must be clearly labeled in the body.
     {
-        "output_field": "order_id",
+        "output_field": "Order Status",
         "method": "key_value",
-        "key_patterns": ["Order Number:", "Reference #", "Transaction ID"],
-        "delimiter": ":" # Delimiter used to separate the key from the value in the email body
+        "key_patterns": ["Status", "Order Status", "State"],
+        "delimiter": r"\s*[:\-\#]\s*",
+    },
+    {
+        "output_field": "Total Amount",
+        "method": "key_value",
+        "key_patterns": ["Total", "Total Amount", "Total Amount Due", "Invoice Total"],
+        "delimiter": r"\s*[:\-\#]\s*",
+    },
+    {
+        "output_field": "Shipping Method",
+        "method": "key_value",
+        "key_patterns": ["Shipping Method", "Ship Method"],
+        "delimiter": r"\s*[:\-\#]\s*",
+    },
+    {
+        "output_field": "Order ID",
+        "method": "key_value",
+        "key_patterns": ["Order ID", "Order-ID"],
+        "delimiter": r"\s*[:\-\#]\s*",
     },
 
+    # --- 2. Simple Regex Field (For common pattern data) ---
+    # Captures a simple date/time stamp if found outside the headers.
     {
-        "output_field": "tracking_code",
+        "output_field": "Invoice Date",
         "method": "regex_pattern",
-        "pattern": r"Tracking Link:\s*(https?:\/\/tracking\.com\/[^\s]+)",
+        # Matches common date formats like YYYY-MM-DD or MM/DD/YYYY
+        "pattern": r"Date\s*:\s*(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})",
     },
-
-    {
-        "output_field": "recipient_email",
-        "method": "header",
-        "header_name": "To" # Extract value directly from the email header
-    }
 ]
