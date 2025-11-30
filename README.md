@@ -1,168 +1,181 @@
 SECURE GMAIL TO GOOGLE SHEETS AUTOMATION PIPELINE
 
-
-
 PROJECT OVERVIEW
 
-This is a robust, production-ready Python script designed to automatically and securely extract specific data from your incoming Gmail messages and write it directly to a Google Sheet.
+This is a robust, production-ready Python script designed to automatically and securely extract specific, structured data from your incoming Gmail messages and write it directly to a Google Sheet.
 
-This solution eliminates manual data entry, saving you time and ensuring 100% data accuracy.
-
-
+This solution eliminates manual data entry, saving you significant time and ensuring 100% data accuracy by running a reliable, fault-tolerant workflow.
 
 KEY FEATURES
 
-\- Secure Authentication: Uses Google OAuth 2.0 for secure access (no passwords required). Tokens are refreshed automatically.
+Secure Authentication: Uses Google OAuth 2.0 for secure, token-based access. No passwords are stored, and tokens are refreshed automatically.
 
-\- Enterprise Stability: Implements Exponential Backoff and Retries on all API calls, ensuring the script handles network errors and Google rate limits without crashing.
+Enterprise Stability: Implements Exponential Backoff and Retries on all API calls (Gmail and Sheets), ensuring the script gracefully handles network errors and Google rate limits without crashing.
 
-\- Flexible Data Parsing: Uses a data-driven configuration map (config.py) that allows you to easily change or add new data fields without modifying the core logic.
+Data Integrity: Emails are only marked as read AFTER successful confirmation that the data has been safely exported to the Google Sheet.
 
-\- Clean Operation: Only processes unread emails matching a specific search query, then marks them as read.
+Flexible Data Parsing (Scope): Uses a data-driven configuration map (config.py) designed for robust, all-rounded data extraction. This map is tailored for standard email formats (key/value pairs, structured codes).
 
+Scope Limitation: The script is optimized for Key: Value and simple formats. It does NOT support fields that are adjacent on the same line or deeply nested in tables, which require custom RegEx development (available in the Premium/Custom tier).
 
+Clean Operation: Only processes unread emails matching a specific search query.
 
 SETUP GUIDE (5 Steps to Automation)
 
----
+Step 1: Install Dependencies
 
-Prerequisites
+To ensure the project runs without conflicting with other Python software on your system, you must use a virtual environment.
 
-Ensure you have Python 3.10+ installed on your system.
-
-
-
-Install Dependencies
-
-To ensure the project runs without conflicting with other software on your system, you must use a virtual environment.
-
-1. Create Environment:
+Create Environment:
 Open your terminal or command prompt, navigate to the project directory, and create the environment (we recommend naming it 'venv'):
+
 python -m venv venv
 
-2. Activate Environment:
+Activate Environment:
 You MUST activate the environment every time you open a new terminal session before running the script.
 
-    - Windows (Command Prompt):
-      venv\Scripts\activate.bat
+OS
 
-    - Windows (PowerShell):
-      venv\Scripts\Activate.ps1
+Command
 
-    - macOS / Linux:
-      source venv/bin/activate
+Windows (Command Prompt)
 
-3. Install Requirements:
-With the environment activated, install all necessary libraries:
+venv\Scripts\activate.bat
+
+Windows (PowerShell)
+
+venv\Scripts\Activate.ps1
+
+macOS / Linux
+
+source venv/bin/activate
+
+Install Requirements:
+With the environment activated (you should see (venv) at your prompt), install all necessary libraries:
+
 pip install -r requirements.txt
 
-(You should see '(venv)' or similar text at the start of your terminal prompt when the environment is active.)
+Step 2: Secure Google API Setup (CRITICAL)
 
+This process securely links your script to your Google account and is required only once.
 
-Secure Google API Setup (Critical Step)
+A. Enable APIs: Go to the Google Cloud Console. Ensure the Gmail API and Google Sheets API are Enabled for your project.
 
-This process securely links your script to your Google account.
+B. Download Credentials: Navigate to APIs & Services > Credentials.
 
-A. Enable APIs: Go to the Google Cloud Console. Ensure the \*\*Gmail API\*\* and \*\*Google Sheets API\*\* are Enabled for your project.
+Click Create Credentials and choose OAuth client ID.
 
-B. Download Credentials: Navigate to APIs \& Services > Credentials. Create an OAuth client ID for a \*\*Desktop app\*\*.
+For the Application Type, select Desktop app.
 
-C. Click the \*\*Download JSON\*\* button and rename the file to \*\*client\_secret.json\*\*.
+Click the Download JSON button and rename the file to client_secret.json.
 
-D. Place the \*\*client\_secret.json\*\* file directly into the root directory of this project.
+Place the client_secret.json file directly into the root directory of this project.
 
+Step 3: Configuration (.env File)
 
+You must create a new file named .env (note the starting dot) in the root of the project directory. Use the provided .env.example as a guide.
 
-Configuration (The .env File)
+Variable
 
-You must create a new file named \*\*.env\*\* (note the starting dot) in the root of the project directory. Use the provided .env.example as a guide.
+Description
 
+SPREADSHEET_ID
 
+The unique ID from your Google Sheet URL (e.g., 1BsyG...Q4o3).
 
-| Variable | Description |
+SHEET_NAME
 
-| SPREADSHEET\_ID | The unique ID from your Google Sheet URL (e.g., 1BsyG...Q4o3).
+The exact name of the tab in your spreadsheet (e.g., Sheet1 or Processed Data).
 
-| SHEET\_NAME | The exact name of the tab in your spreadsheet (e.g., Sheet1 or Processed Data).
+CLIENT_SECRET_FILE
 
-| CLIENT\_SECRET\_FILE | Do not change. Must be set to client\_secret.json.
+Do not change. Must be set to client_secret.json.
 
-| MAX\_RESULTS | The maximum number of unread emails to process per run (e.g., 50).
+MAX_RESULTS
 
-| HIGH\_PRIORITY\_KEYWORDS | The keywords you want your program to check for when determining priority.
+The maximum number of unread emails to process per run (e.g., 50).
 
-| LOG\_LEVEL | Set to INFO. This controls how much detail is saved to the log file.
+HIGH_PRIORITY_KEYWORDS
 
-| GMAIL\_SEARCH\_QUERY | CRITICAL: The string used to filter which unread emails are fetched.
+Comma-separated list of keywords to check for (e.g., URGENT, ACTION NEEDED, High Priority).
 
+LOG_LEVEL
 
+Set to INFO. Controls how much detail is saved to the log file.
 
-Define Your Data Fields (config.py)
+GMAIL_SEARCH_QUERY
 
-This file is already configured by your developer (me!) for your specific emails, but it's important to understand how it works.
+CRITICAL: The string used to filter which unread emails are fetched.
 
-The \*\*PARSING\_MAP\*\* is a list of dictionaries that tell the script exactly where to look in the email (Header, Body, or Subject) and what pattern (Key/Value, RegEx) to use to extract your data fields.
+Step 4: Define Your Data Fields (config.py)
 
+This file contains the PARSING_MAP, which is the core logic for data extraction. The developer (me!) configured this for your specific email format.
 
+The PARSING_MAP is a list of instructions that tell the script exactly where to look (Header, Body) and what pattern (Key/Value, RegEx) to use to extract your custom data fields. Changing the fields here will automatically update the column headers in your Google Sheet.
 
-Detailed Search Query Setup
+Step 5: Run the Pipeline
 
-The \*\*GMAIL\_SEARCH\_QUERY\*\* variable determines exactly which emails the script will process. It uses the same advanced search operators you would use in the Gmail search bar.
+Ensure your virtual environment is active (Step 1).
 
-
-
-\- Rule 1: Always include \*\*`is:unread`\*\*. This ensures the script only processes new emails.
-
-\- Rule 2: Combine operators with spaces. (e.g., `is:unread from:amazon subject:shipment`)
-
-
-
-| Operator | Purpose | Example |
-
-| from: | Filters emails from a specific sender. | from:orders@acme.com |
-
-| subject: | Filters emails containing a specific word or phrase in the subject line. | subject:"New Order Confirmation" |
-
-| has:attachment | Filters emails that contain any file attachment. | has:attachment |
-
-
-
-Example Search String (for .env):
-
-GMAIL\_SEARCH\_QUERY=is:unread from:tracking@shipping.co subject:"Your package has shipped"
-
-
-
-First Run and Authentication
-
-Ensure all previous steps are complete.
-
+First Run and Authentication:
 Run the main pipeline from your Terminal:
 
 python pipeline.py
 
+The first time, a browser window will open. Sign in and grant permissions. Once authenticated, a file named token.pickle will appear in your project folder. This is your secure login key; do not delete this file.
 
+Subsequent Runs:
+To run the automation again at any time, simply ensure the environment is active and repeat the command. The script will use the saved token and run automatically.
 
-Authentication: The first time you run it, a browser window will open. Sign in and grant permissions.
+Detailed Search Query Setup
 
-Secure Token: Once authenticated, a file named \*\*token.pickle\*\* will appear in your project folder. This is your secure login key. Do not delete this file.
+The GMAIL_SEARCH_QUERY variable uses the same advanced search operators you would use in the Gmail search bar.
 
+Rule 1: Always include is:unread. This ensures the script only processes new emails and avoids reprocessing old ones.
 
+Rule 2: Combine operators with spaces. (e.g., is:unread from:amazon subject:shipment)
 
-Subsequent Runs
+Operator
 
-To run the automation again at any time, simply repeat the command from Step 6. The script will use the saved token and run automatically.
+Purpose
 
----
+Example
+
+is:unread
+
+Mandatory filter for new emails.
+
+is:unread
+
+from:
+
+Filters emails from a specific sender.
+
+from:orders@acme.com
+
+subject:
+
+Filters emails containing a specific phrase in the subject line.
+
+subject:"New Order Confirmation"
+
+has:attachment
+
+Filters emails that contain any file attachment.
+
+has:attachment
+
+Example Search String (for .env):
+GMAIL_SEARCH_QUERY=is:unread from:tracking@shipping.co subject:"Your package has shipped"
 
 TROUBLESHOOTING AND SUPPORT
 
-If the script fails, please check the following:
+If the script fails or produces unexpected results, please check the following:
 
-\- Check Logs: Review the files in the \*\*logs/\*\* directory for specific error messages.
+Check Logs: Review the files in the logs/ directory for specific error messages and stack traces.
 
-\- Verify Configuration: Double-check the \*\*SPREADSHEET\_ID\*\* and \*\*SHEET\_NAME\*\* in your \*\*.env\*\* file for typos.
+Verify Configuration: Double-check the SPREADSHEET_ID and SHEET_NAME in your .env file for typos.
 
-\- Need Assistance? Your service tier includes 7 days of free support to guarantee a successful launch. Please contact me directly if you encounter any issues.
+Mismatched Header: If you see a ValueError: Mismatched Google Sheet header detected, you must clear the first row of your Google Sheet to allow the script to write the required column names.
 
-"# Starter-Gmail-Sheets-Automation" 
+Need Assistance? Your service tier includes 7 days of free support to guarantee a successful launch. Please contact me directly if you encounter any issues.
